@@ -16,7 +16,9 @@ Expose by web terminal/based linux command (interactive or not)
 
 The initial commit is a draft, a work in progress
 
+# Build info
 
+execute `go install github.com/mysinmyc/draftTerm/cmd/draftTermd`
 
 # Command parameters
 
