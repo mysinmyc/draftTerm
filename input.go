@@ -120,7 +120,7 @@ func (self *inputChannel) ProcessIncomingMessage() error {
 		return nil
 	} 
 
-        fmt.Printf("Received %s \n",vBytes)
+        //fmt.Printf("Received %s \n",vBytes)
         vTmp:=&inputMessage{}
         vError=json.Unmarshal(vBytes[0:vLen],vTmp)
         if vError !=nil {
