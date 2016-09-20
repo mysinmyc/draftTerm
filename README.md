@@ -16,24 +16,31 @@ Expose by web terminal/based linux command (interactive or not)
 
 The initial commit is a draft, a work in progress
 
+
+
+
 # Build info
 
 execute `go install github.com/mysinmyc/draftTerm/cmd/draftTermd`
 
+
+
 # Command parameters
 
 ```
-Usage of /tmp/draftTermd:
+Usage of draftTermd:
   -cert string
-        Public certificate file
+    	Public certificate file
   -cmd string
-        Initial command
+    	Initial command
+  -debug
+    	Enable debug
   -key string
-        Private key file
+    	Private key file
   -listen string
-        Listening address (default "0.0.0.0:8080")
+    	Listening address (default "0.0.0.0:8080")
   -secure
-        Enable protocol encryption
+    	Enable protocol encryption
 ```
 
 

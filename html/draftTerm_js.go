@@ -86,6 +86,8 @@ function TerminalBufferLine(pColumnSize) {
 
 const DEFAULT_SIZE_COLUMNS=80;
 const DEFAULT_SIZE_ROWS=40;
+const DEFAULT_TEXT_COLOR="white";
+const DEFAULT_BACKGROUND_COLOR="black";
 
 function TerminalBuffer() {
 
@@ -98,8 +100,8 @@ function TerminalBuffer() {
 		this._lines = new Array(this._size_columns);
 		this._currentLine=0;
 		this._currentColumn=0;
-		this._currentTextColor="grey";
-		this._currentBackgroundColor="black";
+		this._currentTextColor=DEFAULT_TEXT_COLOR;
+		this._currentBackgroundColor=DEFAULT_BACKGROUND_COLOR;
 	};
 
 	this.clear();
@@ -118,7 +120,7 @@ function TerminalBuffer() {
 
 		//return "?";
 		return null;
-	}
+	};
 
 	this.getColorsAt = function(pColumn, pRow) {
 
@@ -134,7 +136,7 @@ function TerminalBuffer() {
 
 		//return "?";
 		return [null,null];
-	}
+	};
 
 
 	this.newLine = function() {
@@ -162,7 +164,7 @@ function TerminalBuffer() {
 				this._currentColumn=0;
 			}
 		}
-	}
+	};
 
 	this.writeChar = function(pChar) {
 		if (this._currentColumn >= this._size_columns) {
@@ -183,6 +185,9 @@ function TerminalBuffer() {
 
 		switch(pCharacterCode) {
 			case CC_NUL:
+				return true;
+			//Even not managed
+			case CC_BEL:
 				return true;
 			case CC_BS:
 				this.moveBack();
@@ -213,12 +218,12 @@ function TerminalBuffer() {
 					switch (vDirectives[vCnt]) {
 
 						case "":
-							this._currentTextColor="grey";
-							this._currentBackgroundColor="black";
+							this._currentTextColor=DEFAULT_TEXT_COLOR;
+							this._currentBackgroundColor=DEFAULT_BACKGROUND_COLOR;
 							break;
 						case "0":
-							this._currentTextColor="grey";
-							this._currentBackgroundColor="black";
+							this._currentTextColor=DEFAULT_TEXT_COLOR;
+							this._currentBackgroundColor=DEFAULT_BACKGROUND_COLOR;
 							break;
 						case "1":
 							this._currentTextColor="white";
@@ -477,6 +482,7 @@ function TerminalVideoCanvas(pCanvas,pBuffer) {
 	this._canvas=pCanvas;
 	this._buffer=pBuffer;
 	this._renderPending=false;
+	this._renderRunning=false;
 	this._renderDate=new Date();
 	this._backgroundColor=null;
 	this._title="";
@@ -516,13 +522,22 @@ function TerminalVideoCanvas(pCanvas,pBuffer) {
 	this.setBackgroundColor=function(pBackgroundColor) {
 		this._backgroundColor=pBackgroundColor;
 		this.render();
-	}
+	};
 
 	this.renderImmediate = function() {
+		//vStarted = new Date();
 		this._renderDate=new Date();
 		this._renderPending=false;
+
+		if (this._renderInProgress) {
+			console.warn("Warning: rendering overrun");
+		}
+	
+		this._renderInProgress=true;
+			
 		vContext = this._canvas.getContext("2d");
-		vContext.font="20px Courier";
+		vContext.beginPath();
+		vContext.font="20px Monospace,Courier";
 		vContext.textBaseline="top";
 
 		for (var vCurRow=0;vCurRow<this._buffer._size_rows;vCurRow++) {
@@ -561,6 +576,12 @@ function TerminalVideoCanvas(pCanvas,pBuffer) {
 			vContext.fillStyle="red";
 			vContext.fillText(this._buffer.getX()+","+this._buffer.getY(),this._canvas.width-100,(this._buffer._size_rows+1)*21);
 		}
+		
+		this._renderInProgress=false;
+
+		vContext.stroke();
+		//vFinished=new Date();
+		//console.log("Redering time "+(vFinished.getTime() - vStarted.getTime())+"ms");
 	};
 
 	this.escapeSequence = function(pSequence) {
@@ -626,8 +647,9 @@ CommunicationChannel.prototype.connect=function(pUrl) {
 	}.bind(this));
 
 	this._webSocket.addEventListener("message", function(pEvent) {
-		 writeTraceMessage("[WEBSOCKET "+this._url+"]  received {{{"+pEvent.data+"}}}");
-		 this.onDataToDisplay(pEvent.data);
+		writeTraceMessage("[WEBSOCKET "+this._url+"]  received {{{"+pEvent.data+"}}}");
+		this.onDataToDisplay(pEvent.data);
+		this._webSocket.send(" ");
 	}.bind(this));
 
 	this._webSocket.addEventListener("error", function(pEvent) {
@@ -874,8 +896,11 @@ function TerminalEmulator(pCanvas, pUrl) {
 		}.bind(this);
 
 		this._communicationChannel.onDataToDisplay = function(pData){
+			//vStarted=new Date();
 			this._TerminalOutputParser.parse(pData);
 			this._display.render();
+			//vFinished=new Date();
+			//console.log("Elapsed time "+(vFinished.getTime() - vStarted.getTime())+"ms");
 		}.bind(this);
 
 		this._TerminalOutputParser.onWriteChar=function (pChar) {

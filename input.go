@@ -12,32 +12,49 @@ type Byted interface {
 	Bytes() []byte
 }
 
+
+
 type inputMessage struct {
         Type  string `json:"type"`
 }
+
+
 
 func (self inputMessage) String() string {
         return fmt.Sprintf("Generic message of type %s", self.Type)
 }
 
+
+
 func (self inputMessage) Bytes() [] byte {
 	return []byte(self.String())
 }
 
+
+
+//
+// Message received when a key has been pressed 
+//   Data are obtained from KeyBoardEvent 
 type keyPressedMessage struct {
 	inputMessage
-        Key   string `json:"key"`
+        Key   string `json:"key"`	
         Code  byte   `json:"code"`
         Shift bool   `json:"shift"`
         Ctrl  bool   `json:"ctrl"`
         Alt   bool   `json:"alt"`
 }
 
+
+
 func (self keyPressedMessage) String() string {
         vJson, _ := json.Marshal(self)
         return string(vJson)
 }
 
+
+//
+// Convert input keyboard data into data to send to the pty
+// 
 func (self keyPressedMessage)Bytes() []byte {
 
         if len(self.Key) > 1 {
@@ -83,6 +100,10 @@ func (self keyPressedMessage)Bytes() []byte {
 }
 
 
+
+//
+// Message received when the client ask for terminal resize
+//
 type resizeTerminalMessage struct {
 	inputMessage
         Cols  int `json:"cols"`
@@ -101,13 +122,17 @@ type inputChannel struct {
 }
 
 
+
+//
+// 
+//
 func NewInputChannel(pInput io.Reader, pPty *os.File) *inputChannel {
 	
 	return &inputChannel{ input:pInput, pty: pPty }
 }	
 
 
-func (self *inputChannel) ProcessIncomingMessage() error {
+func (self *inputChannel) ProcessIncomingMessage(pSyncChannel chan bool) error {
 
 	vBytes := make([]byte, 8000)
 
@@ -115,12 +140,19 @@ func (self *inputChannel) ProcessIncomingMessage() error {
         if vError !=nil  {
                 return vError
         }
-       
-	if vLen == 0 {
+      
+	if vLen ==1 {
+		pSyncChannel<-true	
+		return nil
+	} 
+
+	if vLen ==0 {
 		return nil
 	} 
 
         //fmt.Printf("Received %s \n",vBytes)
+
+
         vTmp:=&inputMessage{}
         vError=json.Unmarshal(vBytes[0:vLen],vTmp)
         if vError !=nil {
@@ -134,7 +166,9 @@ func (self *inputChannel) ProcessIncomingMessage() error {
 			if (vError!=nil) {
 				return vError
 			}
-        		//fmt.Printf("Processing message %s... \n",vKeyPressed)
+			if IsDebug() {
+	        		logDebug("Processing keyboard message %v... \n",vKeyPressed)
+			}
 			_,vError=self.pty.Write(vKeyPressed.Bytes())
 			return vError
 		
@@ -144,7 +178,9 @@ func (self *inputChannel) ProcessIncomingMessage() error {
 			if (vError!=nil) {
 				return vError
 			}
-			//fmt.Printf("Processing message %s ...\n",vResize)
+			if IsDebug() {
+	        		logDebug("Processing resize message %v... \n",vResize)
+			}
 			vError=ResizeTerminal(self.pty, vResize.Cols,vResize.Rows)
                         return vError
         }

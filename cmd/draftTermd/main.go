@@ -22,6 +22,7 @@ var (
 	flag_KeyFile=flag.String("key", "", "Private key file")
 	flag_Listen=flag.String("listen", "0.0.0.0:8080", "Listening address")
 	flag_Command=flag.String("cmd", "", "Initial command")
+	flag_Debug=flag.Bool("debug", false, "Enable debug")
 )
 
 
@@ -41,8 +42,8 @@ func createWebSocketUrlFromRequest(pWebSocketPath string, pRequest *http.Request
 
 
 
-func getUserNameById(pId int)(vName string, vError error) {
-	vCommand:=exec.Command("id","-u","-n",fmt.Sprintf("%d",pId))
+func getUserNameById(pId int)(string, error) {
+	vCommand:=exec.Command("id","-u","-n")//,fmt.Sprintf("%d",pId))
 	vOutput,vError:=vCommand.Output()
 	return strings.TrimRight(string(vOutput),"\n"),vError
 }
@@ -78,11 +79,21 @@ func main() {
 
 	flag.Parse()
 
-	vCommand,vArguments,vError:=evaluateInitialCommand()
+	if *flag_Debug {
+		log.Println("Started in debug mode");
+		draftTerm.SetDebug(true)
+	}
 
+	vCommand,vArguments,vError:=evaluateInitialCommand()
 	if vError!= nil  {
 		log.Fatalf("Error evaluating command to execute %v",vError)
 	}
+
+	os.Setenv("TERM", "xterm")
+	if vError!= nil  {
+		log.Fatalf("Error setting TERM variable to xterm %v",vError)
+	}
+
 
 	log.Printf("Initial command for terminal: %s %s",vCommand,strings.Join(vArguments," "))
 

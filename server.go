@@ -43,16 +43,14 @@ func (self *terminalServer) Handler(ws *websocket.Conn) {
 		return
 	}
 
-	go pipe(vStdinPipe, ws)
+	vSyncChannel:=make(chan bool,1)
+	go pipe(vStdinPipe, ws, vSyncChannel)
 
 
 	vInputChannel:= NewInputChannel(ws,vStdinPipe)
 	for {
-
-		vErr:=vInputChannel.ProcessIncomingMessage()
-
+		vErr:=vInputChannel.ProcessIncomingMessage(vSyncChannel)
 		if vErr != nil {
-			//logError("Error procesing input message ",vErr)
 			return
 		}
 	}

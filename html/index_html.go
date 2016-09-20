@@ -16,7 +16,7 @@ function initTerminal() {
 </script>
 </head>
 <body onload="initTerminal()">
-	<canvas id="myCanvas1" style="width:90%; height:90%">Not supported by your browser</canvas>
+	<canvas id="myCanvas1" style="width:100%; height:100%">Not supported by your browser</canvas>
 </body>
 </html>
 

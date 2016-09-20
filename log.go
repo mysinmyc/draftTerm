@@ -3,27 +3,45 @@ package draftTerm
 import (
 	"fmt"
 	"log"
+	"os"
 )
 
 var (
-        OUTPUT = make(chan string,1000)
+        _debug_Channel = make(chan string,1000)
+	_debug_Logger = log.New(os.Stderr,"DEBUG",0)
+	_debug  = false
 )
 
 
-func outputHandler() {
+func debugWriter() {
         for {
-                log.Printf(<-OUTPUT)
+                log.Printf(<-_debug_Channel)
         }
 }
 
+func logDebug(pFormat string, pParm ...interface{}) {
+	if _debug == false {
+		return;
+	}
+	_debug_Channel<-fmt.Sprintf(pFormat, pParm...);
+}
+
 func logMessage(pMessage string) {
-	OUTPUT<-pMessage;
+	log.Println(pMessage);
 }
 
 func logError(pMessage string,pError error) {
-	OUTPUT<-fmt.Sprintf("ERROR:%s (%v)!!!\n ",pMessage,pError);
+	log.Printf("ERROR:%s (%v)!!!\n",pMessage,pError);
 }
 
 func init() {
-	go outputHandler();
+	go debugWriter();
+}
+
+func SetDebug(pDebug bool) {
+	_debug = pDebug;
+}
+
+func IsDebug() bool {
+	return _debug;
 }
