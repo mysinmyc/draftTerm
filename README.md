@@ -1,6 +1,6 @@
 # draftTerm
 
-Concept for a Unix vt100 Terminal emulator (frontend javascript, channel websocket, backend go)
+Concept for a Unix Terminal emulator (frontend javascript, channel websocket, backend go)
 
 The program has a webserver that exposes the javascript client and the websocket to transfer data from/to the terminal
 
@@ -17,11 +17,29 @@ Expose by web terminal/based linux command (interactive or not)
 The initial commit is a draft, a work in progress
 
 
+# Docker container
+
+Is it possible to test it in a docker container
+
+Some examples
+
+- Run a contaniner that show a terminal with a top running. To connect to the container open a browser to https://{dockerhost}:8443
+```
+	docker run -d -p 8443:8443  mysinmyc/draftterm top
+```
 
 
-# Build info
+- Run a container with a login session. To connect to the container open a browser to https://{dockerhost}:8443. User id is guest, password is password01 (forced by GUEST_PASSWORD environment variable
+```
+	docker run -d -p 8443:8443 -e GUEST_PASSWORD=password01 mysinmyc/draftterm
+```
+ 
 
-execute `go install github.com/mysinmyc/draftTerm/cmd/draftTermd`
+# Direct Build info
+
+this project depends on "github.com/kr/pty"
+
+to build it execute `go get -t github.com/mysinmyc/draftTerm/cmd/draftTermd`
 
 
 
