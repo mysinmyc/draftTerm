@@ -1,14 +1,4 @@
-FROM debian:jessie
-
-#Install compiler
-RUN apt-get update \
-	&& apt-get install -y --no-install-recommends git ca-certificates curl \
-	&& apt-get clean
-
-ENV GO_VERSION 1.7.1
-RUN curl -fsSL "https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz" \
-	| tar -xzC /usr/local
-
+FROM golang:1.7.1-wheezy
 
 #Create target dirs
 RUN mkdir -p /opt/draftTerm/etc /opt/draftTerm/bin /opt/draftTerm/src
