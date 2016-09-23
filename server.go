@@ -27,6 +27,23 @@ func NewTerminalServer(pCommand string, pArguments ...string) *terminalServer {
 
 
 
+func killCommand(pCommand *exec.Cmd) {
+        if (pCommand.Process == nil) {
+                return
+        }
+        err:=pCommand.Process.Kill()
+	if err != nil {
+		logError("Failed to kill command",err)
+	}
+        _,err=pCommand.Process.Wait()
+	if err != nil {
+		logError("Failed to wait command",err)
+		return
+	}
+}
+
+
+
 //
 // WebSocket Handler 
 // 	it execute the command and manage i/o trough the pty for each websocket connection
@@ -36,6 +53,7 @@ func (self *terminalServer) Handler(ws *websocket.Conn) {
 	defer ws.Close()
 
 	vCmd := exec.Command(self.command, self.arguments...)
+        defer killCommand(vCmd)
 	vStdinPipe, err := pty.Start(vCmd)
 	defer vStdinPipe.Close()
 	if err != nil {
