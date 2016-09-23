@@ -621,8 +621,8 @@ function TerminalVideoCanvas(pCanvas,pBuffer) {
 	};
 
 	this.getOptimalSize =function() {
-		vOptimalX=Math.trunc(this._canvas.clientWidth / 11);
-		vOptimalY=Math.trunc(this._canvas.clientHeight / 21)-2;
+		vOptimalX=Math.floor(this._canvas.clientWidth / 11);
+		vOptimalY=Math.floor(this._canvas.clientHeight / 21)-2;
 		return [vOptimalX,vOptimalY];
 	};
 }

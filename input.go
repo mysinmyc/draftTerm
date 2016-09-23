@@ -59,6 +59,8 @@ func (self keyPressedMessage)Bytes() []byte {
 
         if len(self.Key) > 1 {
                 switch self.Key {
+			case "Spacebar":
+				return []byte{' '}
 			case "Tab":
 				return []byte{'\t'}
 			case "Backspace":
@@ -67,13 +69,13 @@ func (self keyPressedMessage)Bytes() []byte {
 				return []byte{27}
 			case "Enter":
 				return []byte{10}
-			case "ArrowUp":
+			case "ArrowUp" , "Up":
 				return []byte{27, 91, 65}
-			case "ArrowDown":
+			case "ArrowDown" , "Down":
 				return []byte{27, 91, 66}
-			case "ArrowRight":
+			case "ArrowRight" , "Right":
 				return []byte{27, 91, 67}
-			case "ArrowLeft":
+			case "ArrowLeft" , "Left":
 				return []byte{27, 91, 68}
                 }
         } else {
